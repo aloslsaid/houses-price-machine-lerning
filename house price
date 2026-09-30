@@ -1,0 +1,721 @@
+import numpy as np
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.impute import SimpleImputer
+
+from sklearn.linear_model import LinearRegression, Ridge
+
+from sklearn.tree import DecisionTreeRegressor
+
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+
+from sklearn.neighbors import KNeighborsRegressor
+
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+
+df = pd.read_csv("ss.csv")
+
+if "Id" in df.columns:
+
+    df = df.drop("Id", axis=1)
+
+X = df.drop("Price", axis=1)
+
+y = df["Price"]
+
+numeric_columns = X.select_dtypes(
+
+    include=["int64", "float64"]
+
+).columns
+
+categorical_columns = X.select_dtypes(
+
+    include=["object"]
+
+).columns
+
+numeric_imputer = SimpleImputer(strategy="median")
+
+X[numeric_columns] = numeric_imputer.fit_transform(
+
+    X[numeric_columns]
+
+)
+
+categorical_imputer = SimpleImputer(
+
+    strategy="most_frequent"
+
+)
+
+X[categorical_columns] = categorical_imputer.fit_transform(
+
+    X[categorical_columns]
+
+)
+
+X = pd.get_dummies(
+
+    X,
+
+    columns=categorical_columns,
+
+    drop_first=True,
+
+    dtype=int
+
+)
+
+X = X.replace(
+
+    [np.inf, -np.inf],
+
+    np.nan
+
+)
+
+X = X.fillna(
+
+    X.median(numeric_only=True)
+
+)
+
+X_train, X_test, y_train, y_test = train_test_split(
+
+    X,
+
+    y,
+
+    test_size=0.20,
+
+    random_state=42
+
+)
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+
+models = {
+
+    "Linear Regression":
+
+        LinearRegression(),
+
+    "Ridge Regression":
+
+        Ridge(alpha=10),
+
+    "Decision Tree":
+
+        DecisionTreeRegressor(
+
+            max_depth=15,
+
+            min_samples_split=5,
+
+            random_state=42
+
+        ),
+
+    "Random Forest":
+
+        RandomForestRegressor(
+
+            n_estimators=300,
+
+            random_state=42,
+
+            n_jobs=-1
+
+        ),
+
+    "Gradient Boosting":
+
+        GradientBoostingRegressor(
+
+            n_estimators=300,
+
+            learning_rate=0.05,
+
+            max_depth=3,
+
+            random_state=42
+
+        ),
+
+    "KNN":
+
+        KNeighborsRegressor(
+
+            n_neighbors=5,
+
+            weights="distance"
+
+        )
+
+}
+
+results = []
+
+for name, model in models.items():
+
+    if name in [
+
+        "Linear Regression",
+
+        "Ridge Regression",
+
+        "KNN"
+
+    ]:
+
+        model.fit(
+
+            X_train_scaled,
+
+            y_train
+
+        )
+
+        predictions = model.predict(
+
+            X_test_scaled
+
+        )
+
+    else:
+
+        model.fit(
+
+            X_train,
+
+            y_train
+
+        )
+
+        predictions = model.predict(
+
+            X_test
+
+        )
+
+    r2 = r2_score(
+
+        y_test,
+
+        predictions
+
+    )
+
+    mae = mean_absolute_error(
+
+        y_test,
+
+        predictions
+
+    )
+
+    rmse = np.sqrt(
+
+        mean_squared_error(
+
+            y_test,
+
+            predictions
+
+        )
+
+    )
+
+    results.append({
+
+        "Model": name,
+
+        "R2": r2,
+
+        "MAE": mae,
+
+        "RMSE": rmse
+
+    })
+
+results_df = pd.DataFrame(results)
+
+results_df = results_df.sort_values(
+
+    by="R2",
+
+    ascending=False
+
+)
+
+print(results_df.to_string(index=False))
+
+best = results_df.iloc[0]
+
+print("\nBest Model:", best["Model"])
+
+print("R2:", round(best["R2"], 4))
+
+print("MAE:", round(best["MAE"], 2))
+
+print("RMSE:", round(best["RMSE"], 2))
+
+import numpy as np
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.compose import ColumnTransformer
+
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+from sklearn.impute import SimpleImputer
+
+from sklearn.pipeline import Pipeline
+
+from sklearn.linear_model import LinearRegression, Ridge
+
+from sklearn.tree import DecisionTreeRegressor
+
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+
+from sklearn.neighbors import KNeighborsRegressor
+
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+
+df = pd.read_csv("ss.csv")
+
+df = df.drop("Id", axis=1)
+
+X = df.drop("Price", axis=1)
+
+y = df["Price"]
+
+numeric_features = [
+
+    "Area",
+
+    "Bedrooms",
+
+    "Bathrooms",
+
+    "Floors",
+
+    "YearBuilt"
+
+]
+
+categorical_features = [
+
+    "Location",
+
+    "Condition",
+
+    "Garage"
+
+]
+
+numeric_transformer = Pipeline([
+
+    ("imputer", SimpleImputer(strategy="median")),
+
+    ("scaler", StandardScaler())
+
+])
+
+categorical_transformer = Pipeline([
+
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+
+    ("onehot", OneHotEncoder(
+
+        handle_unknown="ignore",
+
+        sparse_output=False
+
+    ))
+
+])
+
+preprocessor = ColumnTransformer([
+
+    ("num", numeric_transformer, numeric_features),
+
+    ("cat", categorical_transformer, categorical_features)
+
+])
+
+X_train, X_test, y_train, y_test = train_test_split(
+
+    X,
+
+    y,
+
+    test_size=0.20,
+
+    random_state=42
+
+)
+
+models = {
+
+    "Linear Regression":
+
+        LinearRegression(),
+
+    "Ridge Regression":
+
+        Ridge(alpha=10),
+
+    "Decision Tree":
+
+        DecisionTreeRegressor(
+
+            max_depth=10,
+
+            min_samples_split=5,
+
+            random_state=42
+
+        ),
+
+    "Random Forest":
+
+        RandomForestRegressor(
+
+            n_estimators=300,
+
+            max_depth=15,
+
+            min_samples_split=2,
+
+            random_state=42,
+
+            n_jobs=-1
+
+        ),
+
+    "Gradient Boosting":
+
+        GradientBoostingRegressor(
+
+            n_estimators=300,
+
+            learning_rate=0.03,
+
+            max_depth=3,
+
+            random_state=42
+
+        ),
+
+    "KNN":
+
+        KNeighborsRegressor(
+
+            n_neighbors=10,
+
+            weights="distance"
+
+        )
+
+}
+
+results = []
+
+for name, model in models.items():
+
+    pipeline = Pipeline([
+
+        ("preprocessor", preprocessor),
+
+        ("model", model)
+
+    ])
+
+    pipeline.fit(
+
+        X_train,
+
+        y_train
+
+    )
+
+    predictions = pipeline.predict(
+
+        X_test
+
+    )
+
+    r2 = r2_score(
+
+        y_test,
+
+        predictions
+
+    )
+
+    mae = mean_absolute_error(
+
+        y_test,
+
+        predictions
+
+    )
+
+    rmse = np.sqrt(
+
+        mean_squared_error(
+
+            y_test,
+
+            predictions
+
+        )
+
+    )
+
+    results.append({
+
+        "Model": name,
+
+        "R2": r2,
+
+        "MAE": mae,
+
+        "RMSE": rmse
+
+    })
+
+results_df = pd.DataFrame(results)
+
+results_df = results_df.sort_values(
+
+    by="R2",
+
+    ascending=False
+
+)
+
+print(results_df.to_string(index=False))
+
+best = results_df.iloc[0]
+
+print("\nBest Model:", best["Model"])
+
+print("R2:", round(best["R2"], 4))
+
+print("MAE:", round(best["MAE"], 2))
+
+print("RMSE:", round(best["RMSE"], 2))
+
+import numpy as np
+
+import pandas as pd
+
+from sklearn.datasets import fetch_california_housing
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.linear_model import LinearRegression, Ridge
+
+from sklearn.tree import DecisionTreeRegressor
+
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+
+from sklearn.neighbors import KNeighborsRegressor
+
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+
+data = fetch_california_housing(as_frame=True)
+
+df = data.frame
+
+X = df.drop("MedHouseVal", axis=1)
+
+y = df["MedHouseVal"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+
+    X, y, test_size=0.2, random_state=42
+
+)
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+
+models = {
+
+    "Linear Regression": LinearRegression(),
+
+    "Ridge": Ridge(alpha=1.0),
+
+    "Decision Tree": DecisionTreeRegressor(
+
+        random_state=42,
+
+        max_depth=15
+
+    ),
+
+    "Random Forest": RandomForestRegressor(
+
+        n_estimators=300,
+
+        random_state=42,
+
+        n_jobs=-1
+
+    ),
+
+    "Gradient Boosting": GradientBoostingRegressor(
+
+        n_estimators=300,
+
+        learning_rate=0.05,
+
+        max_depth=3,
+
+        random_state=42
+
+    ),
+
+    "KNN": KNeighborsRegressor(n_neighbors=5)
+
+}
+
+results = []
+
+for name, model in models.items():
+
+    if name in ["Linear Regression", "Ridge", "KNN"]:
+
+        model.fit(X_train_scaled, y_train)
+
+        predictions = model.predict(X_test_scaled)
+
+    else:
+
+        model.fit(X_train, y_train)
+
+        predictions = model.predict(X_test)
+
+    r2 = r2_score(y_test, predictions)
+
+    mae = mean_absolute_error(y_test, predictions)
+
+    rmse = np.sqrt(mean_squared_error(y_test, predictions))
+
+    results.append([
+
+        name,
+
+        r2,
+
+        mae,
+
+        rmse
+
+    ])
+
+results_df = pd.DataFrame(
+
+    results,
+
+    columns=["Model", "R2", "MAE", "RMSE"]
+
+)
+
+results_df = results_df.sort_values(
+
+    by="R2",
+
+    ascending=False
+
+)
+
+print(results_df.to_string(index=False))
+
+best_model_name = results_df.iloc[0]["Model"]
+
+best_model = models[best_model_name]
+
+if best_model_name in ["Linear Regression", "Ridge", "KNN"]:
+
+    best_model.fit(X_train_scaled, y_train)
+
+    predictions = best_model.predict(X_test_scaled)
+
+else:
+
+    best_model.fit(X_train, y_train)
+
+    predictions = best_model.predict(X_test)
+
+print("\nBest Model:", best_model_name)
+
+if best_model_name in [
+
+    "Decision Tree",
+
+    "Random Forest",
+
+    "Gradient Boosting"
+
+]:
+
+    importance = pd.DataFrame({
+
+        "Feature": X.columns,
+
+        "Importance": best_model.feature_importances_
+
+    })
+
+    importance = importance.sort_values(
+
+        by="Importance",
+
+        ascending=False
+
+    )
+
+    print("\nFeature Importance:")
+
+    print(importance.to_string(index=False))
+
+example = X_test.iloc[[0]]
+
+actual = y_test.iloc[0]
+
+if best_model_name in ["Linear Regression", "Ridge", "KNN"]:
+
+    example_prediction = best_model.predict(
+
+        scaler.transform(example)
+
+    )[0]
+
+else:
+
+    example_prediction = best_model.predict(example)[0]
+
+print("\nPredicted Price:", example_prediction * 100000)
+
+print("Actual Price:", actual * 100000)  
