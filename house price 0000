@@ -107,18 +107,6 @@ else:
 best_model = clone(models[best_model_name])
 best_model.fit(development_data, y_train_full)
 
-if best_model_name in ["Linear Regression", "Ridge", "KNN"]:
-
-    best_model.fit(X_train_scaled, y_train)
-
-    predictions = best_model.predict(X_test_scaled)
-
-else:
-
-    best_model.fit(X_train, y_train)
-
-    predictions = best_model.predict(X_test)
-
 print("\nBest Model:", best_model_name)
 
 if best_model_name in [
