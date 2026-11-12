@@ -1,17 +1,37 @@
-# California House Value Prediction
+# House Price Prediction
 
-An educational machine-learning project that compares regression approaches for California housing values. The repository contains `House Price Prediction Dataset.csv` and a folder named `house price 0000`; inspect the folder to find the scripts or notebook and confirm the dataset columns before running anything.
+A tabular regression project using the included house-price CSV. The maintained entry point compares several regression models using a validation split, selects a candidate on validation data, refits it on train + validation, and evaluates the held-out test set once.
+
+## Dataset
+
+- File: `House Price Prediction Dataset.csv`
+- Target: `Price`
+- Features: area, bedrooms, bathrooms, floors, year built, location, condition and garage.
+- The identifier `Id` is excluded from model features.
 
 ## Setup
 
-1. Clone or download this repository.
-2. Review the CSV header, source, license, and target column.
-3. Inspect `house price 0000` to identify the executable notebook/script and its expected working directory.
-4. Create a Python virtual environment and install dependencies required by the source. No root `requirements.txt` is currently listed.
-5. Follow the run instructions in the project code, if available.
+Python 3.10+:
 
-The project description mentions Linear Regression, Ridge, Decision Tree, Random Forest, Gradient Boosting, and KNN, with R², MAE, and RMSE for comparison. These are project-reported methods, not a benchmark reproduced by this README. Use a held-out test set and fit all preprocessing on training data only to avoid leakage.
+```bash
+python -m venv .venv
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python train.py
+```
 
-## Tests and data handling
+## Evaluation
 
-No root test command is documented. Avoid committing private or licensed data. Record dataset provenance, preprocessing choices, split strategy, and measured results so others can reproduce the experiment.
+The pipeline imputes numeric and categorical data inside scikit-learn preprocessing, preventing preprocessing statistics from being learned from validation/test rows. Candidate selection uses validation R²; final metrics are calculated on the untouched test split. Results are written to `artifacts/metrics.json`, with the serialized model and test predictions alongside it.
+
+The dataset is synthetic or externally sourced according to its provenance; verify its source and license before redistribution. Do not treat a score from one random split as a guarantee of real-world house values.
+
+## Reproducibility
+
+The random seed is fixed in `train.py`. Record Python and dependency versions, dataset provenance, and the generated metrics when publishing results. Generated artifacts are excluded from Git.
+
+## License
+
+No license is declared. All rights reserved unless the repository owner adds an explicit license.
