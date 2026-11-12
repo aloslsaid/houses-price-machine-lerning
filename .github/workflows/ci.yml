@@ -14,4 +14,4 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile training script
-        run: python -c "import py_compile; py_compile.compile("house price 0000", doraise=True)"
+        run: python -c "import py_compile; py_compile.compile('house price 0000', doraise=True)"
