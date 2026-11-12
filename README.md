@@ -15,3 +15,18 @@ The project description mentions Linear Regression, Ridge, Decision Tree, Random
 ## Tests and data handling
 
 No root test command is documented. Avoid committing private or licensed data. Record dataset provenance, preprocessing choices, split strategy, and measured results so others can reproduce the experiment.
+
+
+## Reproducible run
+
+The training script is the extensionless root file `house price 0000`.
+
+```bash
+python -m venv .venv
+# Activate the environment, then:
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python "house price 0000"
+```
+
+**Dataset note:** the current script calls scikit-learn's `fetch_california_housing(as_frame=True)`; it does not read the separately checked-in `House Price Prediction Dataset.csv`. The first run may need internet access to download the California Housing dataset. The local CSV is not used by this script unless the code is deliberately changed.
