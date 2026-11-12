@@ -15,3 +15,8 @@ The project description mentions Linear Regression, Ridge, Decision Tree, Random
 ## Tests and data handling
 
 No root test command is documented. Avoid committing private or licensed data. Record dataset provenance, preprocessing choices, split strategy, and measured results so others can reproduce the experiment.
+
+
+## Evaluation integrity
+
+The training script uses separate training, validation, and test partitions. Model selection is based on validation R²; the held-out test split is used only for the selected model's final metrics. The chosen estimator is then refit on the development data for the example prediction. The script fetches the California Housing dataset through scikit-learn; it does not currently consume the separately stored CSV file.
