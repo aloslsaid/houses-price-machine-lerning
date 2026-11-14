@@ -1,17 +1,56 @@
-# California House Value Prediction
+# California Housing Value Prediction
 
-An educational machine-learning project that compares regression approaches for California housing values. The repository contains `House Price Prediction Dataset.csv` and a folder named `house price 0000`; inspect the folder to find the scripts or notebook and confirm the dataset columns before running anything.
+> A comparative regression experiment using California housing features to estimate median property values.
 
-## Setup
+## Overview
+This project builds and compares classical machine-learning regressors on the California Housing dataset. It focuses on a clear supervised-learning workflow: selecting the target, splitting the data, scaling where appropriate, comparing algorithms, inspecting feature importance, and evaluating predictions.
 
-1. Clone or download this repository.
-2. Review the CSV header, source, license, and target column.
-3. Inspect `house price 0000` to identify the executable notebook/script and its expected working directory.
-4. Create a Python virtual environment and install dependencies required by the source. No root `requirements.txt` is currently listed.
-5. Follow the run instructions in the project code, if available.
+## Dataset and target
+The training script loads the California Housing dataset through Scikit-learn's `fetch_california_housing` interface. The target is `MedHouseVal`; the remaining columns are used as predictors. The script also includes a CSV file in the repository, but the current training script obtains its active dataset through Scikit-learn rather than reading that CSV.
 
-The project description mentions Linear Regression, Ridge, Decision Tree, Random Forest, Gradient Boosting, and KNN, with R², MAE, and RMSE for comparison. These are project-reported methods, not a benchmark reproduced by this README. Use a held-out test set and fit all preprocessing on training data only to avoid leakage.
+## Algorithms compared
+- Linear Regression
+- Ridge Regression
+- Decision Tree Regressor
+- Random Forest Regressor
+- Gradient Boosting Regressor
+- K-Nearest Neighbors Regressor
 
-## Tests and data handling
+The script scales features for Linear Regression, Ridge, and KNN, while tree-based models use the unscaled input features.
 
-No root test command is documented. Avoid committing private or licensed data. Record dataset provenance, preprocessing choices, split strategy, and measured results so others can reproduce the experiment.
+## Evaluation and outputs
+Models are compared using:
+- **R²** — proportion of target variance explained by the model.
+- **MAE** — average absolute prediction error.
+- **RMSE** — error measure that penalizes larger misses more strongly.
+
+The highest-R² candidate is selected and the script prints its test metrics. For supported tree models, it also reports feature importance and demonstrates a prediction for one held-out example.
+
+## Installation
+Python 3.10+ is recommended.
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install numpy pandas scikit-learn
+```
+
+## Run
+The Python script is named `house price 0000` and has no file extension:
+```bash
+python "house price 0000"
+```
+The first run may need an internet connection because Scikit-learn may download the California Housing dataset if it is not already cached locally.
+
+## Repository contents
+- `house price 0000` — model training and comparison script.
+- `House Price Prediction Dataset.csv` — accompanying CSV dataset.
+
+## Scope and limitations
+This is a machine-learning demonstration, not a property appraisal system. Dataset values have a defined geographic and historical context; predictions should not be interpreted as current listing prices. Performance on a held-out split does not guarantee performance in another region or market period.
+
+## Skills demonstrated
+Regression · Dataset exploration · Feature scaling · Ensemble learning · Model comparison · R² / MAE / RMSE · Feature importance
